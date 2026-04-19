@@ -54,9 +54,10 @@ Ejemplo:
 - El State del grafo debe ser un **TypedDict** con campos explícitos
 - No hardcodear credenciales — usar `.env` y `python-dotenv`
 - Los prompts del sistema deben vivir en archivos separados (`delphi/prompts/`)
-- El código debe pasar el linter del proyecto (`ruff`)
 - Ningún nodo del grafo debe tener más de 50 líneas — extraer a funciones helper si es necesario
 - Todo el código vive en `repo-lab10/delphi/`
+- **Manejo de errores:** en caso de error de la API de Gemini, el nodo debe retornar un mensaje de error estructurado al State, nunca lanzar una excepción no controlada. Usar bloques `try/except` en cada llamada al LLM y escribir el error en un campo `error: Optional[str]` del State
+- **Seguridad financiera:** cualquier cálculo que involucre valores monetarios en COP debe usar la clase `Decimal` de Python, nunca `float`. Esto previene errores de redondeo que pueden alterar el DSCR y producir un veredicto incorrecto
 
 ---
 
@@ -67,9 +68,21 @@ Ejemplo:
 - [ ] El nodo está integrado al grafo y el flujo end-to-end funciona en Streamlit
 - [ ] Type hints completos en todas las funciones nuevas
 - [ ] Sin errores de linter (`ruff check .` limpio)
+- [ ] Manejo de errores implementado — ningún nodo lanza excepciones no controladas
+- [ ] Todos los cálculos monetarios usan `Decimal`, no `float`
 - [ ] El agente QA Engineer verificó y entregó reporte
 - [ ] `[Criterio funcional específico de esta tarea]`
 - [ ] `[Métrica de performance si aplica]`
+
+---
+
+## 6. Fase de crítica (antes de pedir código)
+
+Antes de enviarle este brief a Cursor para que genere código, envíalo primero con esta instrucción:
+
+> "Critica este brief: ¿Qué ambigüedades encuentras en los requerimientos financieros? ¿Qué casos edge no están cubiertos? ¿Qué constraints podrían generar conflictos en la implementación?"
+
+Incorpora las observaciones antes de proceder con la implementación. Este paso previene bugs que son difíciles de detectar una vez que el código está escrito.
 
 ---
 
