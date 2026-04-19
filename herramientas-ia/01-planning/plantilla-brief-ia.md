@@ -20,7 +20,7 @@ Ejemplo: `Implementar Intake Agent — captura conversacional de datos financier
 `[Describe el estado actual del proyecto en el momento de esta tarea]`
 
 Ejemplo:
-> Delphi es un CFO virtual para dueños de PyMEs colombianas. El canal de interacción es Streamlit (chat conversacional). El usuario escribe en lenguaje natural y Delphi responde con análisis financiero, escenarios y recomendaciones concretas. El grafo LangGraph orquesta los agentes. El LLM principal es gemini-2.0-flash via Google AI Studio. La base de datos es Supabase (PostgreSQL). Todo el proyecto vive dentro del repositorio repo-lab10, en la carpeta delphi/.
+> Delphi es un CFO virtual para dueños de PyMEs colombianas. El canal de interacción es Streamlit (chat conversacional). El usuario escribe en lenguaje natural y Delphi responde con análisis financiero, escenarios y recomendaciones concretas. El grafo LangGraph orquesta los agentes. El LLM principal es gemini-2.5-flash via Google AI Studio. La base de datos es Supabase (PostgreSQL). Todo el proyecto vive dentro del repositorio repo-lab10, en la carpeta delphi/.
 
 ### Problema que se resuelve
 `[¿Qué falla, falta o bloquea sin esta tarea?]`
@@ -36,7 +36,7 @@ Ejemplo:
 |---|---|
 | Lenguaje | Python 3.11+ |
 | Orquestación | LangGraph (StateGraph) |
-| LLM | Gemini API — modelo: gemini-2.0-flash |
+| LLM | Gemini API — modelo: gemini-2.5-flash |
 | Canal UI | Streamlit (chat conversacional) |
 | Base de datos | Supabase (PostgreSQL via supabase-py) |
 | Patrón de agente | Nodo del grafo con State tipado |

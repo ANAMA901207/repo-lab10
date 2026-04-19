@@ -62,7 +62,7 @@ Interfaz web conversacional construida en Streamlit.
 |---|---|
 | Lenguaje | Python 3.11+ |
 | Orquestacion de agentes | LangGraph (StateGraph) |
-| Modelo de lenguaje | Gemini API — gemini-2.0-flash |
+| Modelo de lenguaje | Gemini API — gemini-2.5-flash |
 | Interfaz de usuario | Streamlit |
 | Base de datos | Supabase (PostgreSQL) |
 | Exportacion PDF | WeasyPrint |

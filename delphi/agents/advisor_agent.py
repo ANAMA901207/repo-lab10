@@ -16,7 +16,7 @@ _VEREDICTOS_VALIDOS = {"viable", "alerta", "critico"}
 def advisor_node(state: DelphiState) -> DelphiState:
     """Genera el veredicto y tres recomendaciones para el usuario.
 
-    Llama a gemini-2.0-flash con los escenarios calculados por scenario_node
+    Llama a gemini-2.5-flash con los escenarios calculados por scenario_node
     y pide una respuesta JSON con 'veredicto' y 'recomendaciones'.
 
     Guardrail (Decisión #4): si el LLM genera un veredicto fuera de
@@ -62,7 +62,7 @@ def advisor_node(state: DelphiState) -> DelphiState:
         )
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
         )
         datos = json.loads(response.text)

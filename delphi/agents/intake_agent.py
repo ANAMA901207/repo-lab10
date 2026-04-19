@@ -33,7 +33,7 @@ def intake_node(state: DelphiState) -> DelphiState:
 
     Flujo:
       1. Carga el prompt desde prompts/intake_prompt.txt
-      2. Llama a gemini-2.0-flash con el mensaje del usuario
+      2. Llama a gemini-2.5-flash con el mensaje del usuario
       3. Parsea la respuesta como JSON con json.loads()
       4. Valida los campos requeridos con Pydantic (_FinancialData)
       5. Escribe los valores en el State como Decimal
@@ -61,7 +61,7 @@ def intake_node(state: DelphiState) -> DelphiState:
         prompt = prompt_template.replace("{mensaje}", state["mensaje_usuario"])
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=prompt,
         )
 
