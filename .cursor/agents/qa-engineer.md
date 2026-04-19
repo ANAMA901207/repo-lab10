@@ -1,6 +1,6 @@
 ---
 name: qa-engineer
-model: claude-4.6-sonnet-medium-thinking
+model: inherit
 description: Call this agent after every feature implementation or sprint completion in the Delphi project to run tests, verify code quality, and deliver a QA report before committing.
 ---
 
