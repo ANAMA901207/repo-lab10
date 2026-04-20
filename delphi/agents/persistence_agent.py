@@ -17,7 +17,7 @@ def _get_supabase_client() -> object:
     from supabase import create_client
     return create_client(
         os.environ["SUPABASE_URL"],
-        os.environ["SUPABASE_KEY"],
+        os.environ["SUPABASE_SERVICE_KEY"],  # TODO: volver a SUPABASE_KEY tras agregar políticas RLS
     )
 
 
