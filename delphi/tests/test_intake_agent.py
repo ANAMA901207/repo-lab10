@@ -2,6 +2,7 @@
 
 import json
 import pytest
+from datetime import date
 from decimal import Decimal
 from unittest.mock import patch, MagicMock
 
@@ -22,13 +23,23 @@ _DATOS_VALIDOS = {
     "deuda_total": 50000000,
     "cuota_mensual": 2000000,
     "sector": "comercio",
+    "fecha_corte": "2025-03-31",
+}
+
+_DATOS_SIN_FECHA = {
+    "ingresos_mensuales": 10000000,
+    "gastos_mensuales": 7000000,
+    "deuda_total": 50000000,
+    "cuota_mensual": 2000000,
+    "sector": "comercio",
+    "fecha_corte": None,
 }
 
 
 class TestIntakeNode:
     @patch("delphi.agents.intake_agent.genai.Client")
     def test_caso_feliz_popula_state(self, mock_client_cls):
-        """Gemini retorna JSON válido → State actualizado con los 5 campos."""
+        """Gemini retorna JSON válido → State actualizado con los 5 campos + fecha_corte."""
         mock_client_cls.return_value.models.generate_content.return_value = _mock_response(_DATOS_VALIDOS)
         state = initial_state("tengo ingresos de 10 millones, gastos de 7")
 
@@ -42,8 +53,28 @@ class TestIntakeNode:
         assert resultado["sector"] == "comercio"
 
     @patch("delphi.agents.intake_agent.genai.Client")
+    def test_fecha_corte_extraida_del_json(self, mock_client_cls):
+        """Decisión #7: fecha en ISO 8601 se convierte a date."""
+        mock_client_cls.return_value.models.generate_content.return_value = _mock_response(_DATOS_VALIDOS)
+        resultado = intake_node(initial_state("test"))
+
+        assert resultado["fecha_corte"] == date(2025, 3, 31)
+        assert isinstance(resultado["fecha_corte"], date)
+
+    @patch("delphi.agents.intake_agent.genai.Client")
+    def test_fecha_corte_default_cuando_es_null(self, mock_client_cls):
+        """Decisión #8: si Gemini retorna null, se usa fecha de hoy en Bogotá."""
+        mock_client_cls.return_value.models.generate_content.return_value = _mock_response(_DATOS_SIN_FECHA)
+        resultado = intake_node(initial_state("test"))
+
+        assert resultado["fecha_corte"] is not None
+        assert isinstance(resultado["fecha_corte"], date)
+        # La fecha de hoy en Bogotá — verificamos que es reciente (no el default None)
+        assert resultado["fecha_corte"] == date.today()  # misma fecha calendario
+
+    @patch("delphi.agents.intake_agent.genai.Client")
     def test_datos_extraidos_son_decimal(self, mock_client_cls):
-        """Decisión #7: los campos financieros se almacenan como Decimal, nunca float."""
+        """Los campos financieros se almacenan como Decimal, nunca float."""
         mock_client_cls.return_value.models.generate_content.return_value = _mock_response(_DATOS_VALIDOS)
         resultado = intake_node(initial_state("test"))
 
@@ -72,9 +103,9 @@ class TestIntakeNode:
 
     @patch("delphi.agents.intake_agent.genai.Client")
     def test_json_con_campos_faltantes_escribe_error(self, mock_client_cls):
-        """JSON válido pero sin campos requeridos → ValidationError de Pydantic → error en State."""
+        """JSON sin campos numéricos requeridos → ValidationError → error en State."""
         mock_client_cls.return_value.models.generate_content.return_value = _mock_response(
-            {"sector": "comercio"}  # faltan todos los campos numéricos
+            {"sector": "comercio", "fecha_corte": None}  # faltan campos numéricos
         )
         resultado = intake_node(initial_state("test"))
 

@@ -20,10 +20,13 @@ class TestDelphiState:
         "deuda_total",
         "cuota_mensual",
         "sector",
+        "fecha_corte",
         "escenarios",
         "veredicto",
         "recomendaciones",
+        "sesion_id",
         "error",
+        "error_persistencia",
     }
 
     def test_initial_state_tiene_todos_los_campos(self):
@@ -67,6 +70,13 @@ class TestDelphiState:
         assert state["sector"] == ""
         assert state["veredicto"] == ""
 
+    def test_initial_state_campos_nuevos_son_none(self):
+        """fecha_corte, sesion_id y error_persistencia comienzan en None."""
+        state = initial_state("test")
+        assert state["fecha_corte"] is None
+        assert state["sesion_id"] is None
+        assert state["error_persistencia"] is None
+
 
 # ---------------------------------------------------------------------------
 # build_graph — ensamblaje del StateGraph
@@ -80,10 +90,11 @@ class TestBuildGraph:
         grafo = build_graph()
         assert isinstance(grafo, CompiledStateGraph)
 
-    def test_build_graph_tiene_nodos_intake_scenario_advisor(self):
-        """El grafo contiene exactamente los tres nodos definidos en el brief."""
+    def test_build_graph_tiene_los_cuatro_nodos(self):
+        """El grafo contiene los cuatro nodos del pipeline."""
         grafo = build_graph()
         nodos = set(grafo.nodes.keys())
         assert "intake" in nodos
         assert "scenario" in nodos
         assert "advisor" in nodos
+        assert "persistence" in nodos

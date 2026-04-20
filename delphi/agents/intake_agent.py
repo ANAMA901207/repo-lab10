@@ -1,8 +1,11 @@
 # delphi/agents/intake_agent.py
 
 import json
+from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import Optional
+from zoneinfo import ZoneInfo
 
 from google import genai
 from dotenv import load_dotenv
@@ -11,6 +14,7 @@ from pydantic import BaseModel, field_validator
 from delphi.graph.delphi_graph import DelphiState
 
 _PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "intake_prompt.txt"
+_ZONA_BOGOTA = ZoneInfo("America/Bogota")
 
 
 class _FinancialData(BaseModel):
@@ -21,11 +25,21 @@ class _FinancialData(BaseModel):
     deuda_total: Decimal
     cuota_mensual: Decimal
     sector: str
+    fecha_corte: Optional[date] = None
 
     @field_validator("sector")
     @classmethod
     def sector_no_vacio(cls, v: str) -> str:
         return v.strip() if v.strip() else "no especificado"
+
+    @field_validator("fecha_corte", mode="before")
+    @classmethod
+    def parsear_fecha(cls, v: object) -> Optional[date]:
+        if v is None:
+            return None
+        if isinstance(v, date):
+            return v
+        return datetime.strptime(str(v), "%Y-%m-%d").date()
 
 
 def intake_node(state: DelphiState) -> DelphiState:
@@ -37,6 +51,7 @@ def intake_node(state: DelphiState) -> DelphiState:
       3. Parsea la respuesta como JSON con json.loads()
       4. Valida los campos requeridos con Pydantic (_FinancialData)
       5. Escribe los valores en el State como Decimal
+      6. Si Gemini no reportó fecha_corte, usa datetime.now(Bogotá).date()
 
     Decisión #2: si state['error'] no es None, retorna sin ejecutar.
     Decisión #10: load_dotenv() y genai.Client() se instancian dentro del nodo.
@@ -46,8 +61,8 @@ def intake_node(state: DelphiState) -> DelphiState:
         state: Estado del grafo con mensaje_usuario poblado.
 
     Returns:
-        Estado actualizado con los 5 campos financieros, o con 'error'
-        si Gemini falla, el JSON es inválido o la validación falla.
+        Estado actualizado con los 6 campos (5 financieros + fecha_corte),
+        o con 'error' si Gemini falla, el JSON es inválido o la validación falla.
     """
     if state["error"] is not None:
         return state
@@ -67,6 +82,12 @@ def intake_node(state: DelphiState) -> DelphiState:
 
         datos = _FinancialData.model_validate(json.loads(response.text))
 
+        fecha_corte: date = (
+            datos.fecha_corte
+            if datos.fecha_corte is not None
+            else datetime.now(_ZONA_BOGOTA).date()
+        )
+
         return {
             **state,
             "ingresos_mensuales": datos.ingresos_mensuales,
@@ -74,6 +95,7 @@ def intake_node(state: DelphiState) -> DelphiState:
             "deuda_total": datos.deuda_total,
             "cuota_mensual": datos.cuota_mensual,
             "sector": datos.sector,
+            "fecha_corte": fecha_corte,
             "error": None,
         }
 
